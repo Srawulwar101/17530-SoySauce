@@ -1,22 +1,26 @@
 import React, { useState } from "react";
-import { signup } from "../services/api";
-import NavBar from "./Navbar";
+import { useNavigate } from "react-router-dom";
+import { login } from "../../services/api";
+import NavBar from "../elements/Navbar";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Container from "react-bootstrap/Container";
 
-const Signup = () => {
+const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-  const handleSignup = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    navigate("/");
     try {
-      const response = await signup(username, password);
+      const response = await login(username, password);
       setMessage(response.data.message);
+      // Store user session or token here if needed
     } catch (error) {
-      setMessage("Signup failed. Please try again.");
+      setMessage("Login failed. Please check your credentials.");
     }
   };
 
@@ -24,8 +28,10 @@ const Signup = () => {
     <>
       <NavBar />
       <Container className="login-container">
-        <Form className="login-form" onSubmit={handleSignup}>
-          <h2>Sign Up</h2>
+        <h1>Welcome to HaaS PoC App!</h1>
+        <p>Please log in to access our services below.</p>
+        <Form className="login-form" onSubmit={handleLogin}>
+          <h2>Login</h2>
           <Form.Group
             className="mb-3"
             type="text"
@@ -47,13 +53,13 @@ const Signup = () => {
             />
           </Form.Group>
           <p>
-            Already have an account?{" "}
-            <a href="/login" style={{ color: "blue" }}>
-              Login
+            Don't have an account?{" "}
+            <a href="/signup" style={{ color: "blue" }}>
+              Sign Up
             </a>
           </p>
           <Button variant="primary" type="submit">
-            Sign Up
+            Login
           </Button>
           {message && (
             <Form.Text className="text-danger login-message">
@@ -66,4 +72,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Login;

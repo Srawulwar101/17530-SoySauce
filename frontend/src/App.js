@@ -1,9 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Signup from "./components/Signup";
-import Login from "./components/Login";
-import Project from "./components/Project";
-import Resource from "./components/Resource";
+import Signup from "./components/pages/Signup";
+import Login from "./components/pages/Login";
+import Project from "./components/pages/Project";
+import Resource from "./components/pages/Resource";
+import Home from "./components/pages/Home";
 
 function App() {
   // Placeholder for userId - In a real app, this would come from user authentication
@@ -12,8 +13,8 @@ function App() {
   return (
     <Router>
       <div className="App">
-        {/* <h1>HaaS PoC App</h1> */}
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/projects" element={<Project userId={userId} />} />

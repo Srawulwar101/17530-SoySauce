@@ -1,23 +1,22 @@
 import React, { useState } from "react";
-import { login } from "../services/api";
-import NavBar from "./Navbar";
+import { signup } from "../../services/api";
+import NavBar from "../elements/Navbar";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Container from "react-bootstrap/Container";
 
-const Login = () => {
+const Signup = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const response = await login(username, password);
+      const response = await signup(username, password);
       setMessage(response.data.message);
-      // Store user session or token here if needed
     } catch (error) {
-      setMessage("Login failed. Please check your credentials.");
+      setMessage("Signup failed. Please try again.");
     }
   };
 
@@ -25,10 +24,8 @@ const Login = () => {
     <>
       <NavBar />
       <Container className="login-container">
-        <h1>Welcome to HaaS PoC App!</h1>
-        <p>Please log in to access our services below.</p>
-        <Form className="login-form" onSubmit={handleLogin}>
-          <h2>Login</h2>
+        <Form className="login-form" onSubmit={handleSignup}>
+          <h2>Sign Up</h2>
           <Form.Group
             className="mb-3"
             type="text"
@@ -50,13 +47,13 @@ const Login = () => {
             />
           </Form.Group>
           <p>
-            Don't have an account?{" "}
-            <a href="/signup" style={{ color: "blue" }}>
-              Sign Up
+            Already have an account?{" "}
+            <a href="/login" style={{ color: "blue" }}>
+              Login
             </a>
           </p>
           <Button variant="primary" type="submit">
-            Login
+            Sign Up
           </Button>
           {message && (
             <Form.Text className="text-danger login-message">
@@ -69,4 +66,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;
