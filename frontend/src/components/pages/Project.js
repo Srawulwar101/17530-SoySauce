@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { createProject, getProjects } from "../../services/api";
+import NavBar from "../elements/Navbar";
+import Button from "react-bootstrap/Button";
 
 const Project = ({ userId }) => {
   const [projectName, setProjectName] = useState("");
@@ -39,41 +41,45 @@ const Project = ({ userId }) => {
   };
 
   return (
-    <div>
-      <h2>Create Project</h2>
-      <form onSubmit={handleCreateProject}>
-        <input
-          type="text"
-          placeholder="Project Name"
-          value={projectName}
-          onChange={(e) => setProjectName(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Project ID"
-          value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
-        />
-        <button type="submit">Create Project</button>
-      </form>
-      <p>{message}</p>
+    <>
+      <NavBar />
+      <div>
+        <h2>Create Project</h2>
+        <form onSubmit={handleCreateProject}>
+          <input
+            type="text"
+            placeholder="Project Name"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Project ID"
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+          />
+          <button type="submit">Create Project</button>
+        </form>
+        <p>{message}</p>
 
-      <h3>Your Projects</h3>
-      <button onClick={loadProjects}>Load Projects</button>
-      <ul>
-        {projects.map((project) => (
-          <li key={project._id}>
-            <strong>{project.project_name}</strong>: {project.description}
-          </li>
-        ))}
-      </ul>
-    </div>
+        <h3>Your Projects</h3>
+        <button onClick={loadProjects}>Load Projects</button>
+        <ul>
+          {projects.map((project) => (
+            <li key={project._id}>
+              <strong>{project.project_name}</strong>: {project.description}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <Button href="/">Back to Home</Button>
+    </>
   );
 };
 

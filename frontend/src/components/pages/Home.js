@@ -6,6 +6,8 @@ const Home = () => {
     <>
       <NavBar />
       <p>This is the homepage.</p>
+      <Button href="/projects">Projects</Button>
+      <Button href="/resources">Resources</Button>
       <Button href="/login">Back to Login</Button>
     </>
   );
