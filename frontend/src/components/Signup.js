@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { signup } from "../services/api";
 import NavBar from "./Navbar";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Container from "react-bootstrap/Container";
 
 const Signup = () => {
   const [username, setUsername] = useState("");
@@ -20,25 +23,45 @@ const Signup = () => {
   return (
     <>
       <NavBar />
-      <div>
-        <h2>Sign Up</h2>
-        <form onSubmit={handleSignup}>
-          <input
+      <Container className="login-container">
+        <Form className="login-form" onSubmit={handleSignup}>
+          <h2>Sign Up</h2>
+          <Form.Group
+            className="mb-3"
             type="text"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="submit">Sign Up</button>
-        </form>
-        <p>{message}</p>
-      </div>
+          >
+            <Form.Label>Username</Form.Label>
+            <Form.Control placeholder="Enter Username" />
+          </Form.Group>
+
+          <Form.Group className="mb-3" controlId="formBasicPassword">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="Enter Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Form.Group>
+          <p>
+            Already have an account?{" "}
+            <a href="/login" style={{ color: "blue" }}>
+              Login
+            </a>
+          </p>
+          <Button variant="primary" type="submit">
+            Sign Up
+          </Button>
+          {message && (
+            <Form.Text className="text-danger login-message">
+              {message}
+            </Form.Text>
+          )}
+        </Form>
+      </Container>
     </>
   );
 };

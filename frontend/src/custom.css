@@ -1,23 +1,47 @@
 :root {
-    --bs-primary: #007bff; /* Change this to your desired primary color */
-    --bs-secondary: #6c757d; /* Change this to your desired secondary color */
-    --bs-tertiary: #bf5700; /* Change this to your desired tertiary color */
-  }
-  
-  .bg-body-tertiary {
-    background-color: var(--bs-tertiary) !important;
-  }
-  
-  .navbar-custom {
-    color: #ffffff; /* Change this to your desired text color */
-  }
-  
-  .navbar-custom .navbar-brand,
-  .navbar-custom .navbar-text,
-  .navbar-custom .nav-link {
-    color: #ffffff; /* Change this to your desired text color */
-  }
-  
-  .navbar-custom .nav-link:hover {
-    color: #cccccc; /* Change this to your desired hover text color */
-  }
+  --bs-primary: #007bff; /* Change this to your desired primary color */
+  --bs-secondary: #6c757d; /* Change this to your desired secondary color */
+  --bs-tertiary: #bf5700; /* Change this to your desired tertiary color */
+}
+
+.bg-body-tertiary {
+  background-color: var(--bs-tertiary) !important;
+}
+
+.navbar-custom {
+  color: #ffffff; /* Change this to your desired text color */
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .navbar-text,
+.navbar-custom .nav-link {
+  color: #ffffff; /* Change this to your desired text color */
+}
+
+.navbar-custom .nav-link:hover {
+  color: #cccccc; /* Change this to your desired hover text color */
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 400px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #fff;
+}
+
+.login-message {
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+}
