@@ -31,11 +31,6 @@ function App() {
             path="/test"
             element={<ProtectedRoute element={ProjectsTest} />}
           />
-          {/* New code block */}
-          <Route
-            path="/new"
-            element={<ProtectedRoute element={NewComponent} />}
-          />
         </Routes>
       </div>
     </Router>
