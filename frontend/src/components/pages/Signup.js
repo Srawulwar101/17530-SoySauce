@@ -26,15 +26,14 @@ const Signup = () => {
       <Container className="login-container">
         <Form className="login-form" onSubmit={handleSignup}>
           <h2>Sign Up</h2>
-          <Form.Group
-            className="mb-3"
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          >
+          <Form.Group className="mb-3">
             <Form.Label>Username</Form.Label>
-            <Form.Control placeholder="Enter Username" />
+            <Form.Control
+              type="text"
+              placeholder="Enter Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="formBasicPassword">

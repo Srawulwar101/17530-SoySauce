@@ -14,11 +14,13 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    navigate("/");
     try {
       const response = await login(username, password);
       setMessage(response.data.message);
-      // Store user session or token here if needed
+      if (response.status === 200) {
+        localStorage.setItem("token", response.data.token); // Store the token
+        navigate("/");
+      }
     } catch (error) {
       setMessage("Login failed. Please check your credentials.");
     }
@@ -34,13 +36,15 @@ const Login = () => {
           <h2>Login</h2>
           <Form.Group
             className="mb-3"
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            controlId="formBasicUsername"
           >
             <Form.Label>Username</Form.Label>
-            <Form.Control placeholder="Enter Username" />
+            <Form.Control
+              type="text"
+              placeholder="Enter Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="formBasicPassword">

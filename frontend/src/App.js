@@ -6,7 +6,7 @@ import Project from "./components/pages/Project";
 import Resource from "./components/pages/Resource";
 import Home from "./components/pages/Home";
 import ProjectsTest from "./components/pages/ProjectsTest";
-
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   // Placeholder for userId - In a real app, this would come from user authentication
@@ -19,9 +19,23 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/projects" element={<Project userId={userId} />} />
-          <Route path="/resources" element={<Resource />} />
-          <Route path="/test" element={<ProjectsTest />} /> 
+          <Route
+            path="/projects"
+            element={<ProtectedRoute element={Project} userId={userId} />}
+          />
+          <Route
+            path="/resources"
+            element={<ProtectedRoute element={Resource} />}
+          />
+          <Route
+            path="/test"
+            element={<ProtectedRoute element={ProjectsTest} />}
+          />
+          {/* New code block */}
+          <Route
+            path="/new"
+            element={<ProtectedRoute element={NewComponent} />}
+          />
         </Routes>
       </div>
     </Router>
