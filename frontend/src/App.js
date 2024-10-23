@@ -5,6 +5,8 @@ import Login from "./components/pages/Login";
 import Project from "./components/pages/Project";
 import Resource from "./components/pages/Resource";
 import Home from "./components/pages/Home";
+import ProjectsTest from "./components/pages/ProjectsTest";
+
 
 function App() {
   // Placeholder for userId - In a real app, this would come from user authentication
@@ -19,6 +21,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/projects" element={<Project userId={userId} />} />
           <Route path="/resources" element={<Resource />} />
+          <Route path="/test" element={<ProjectsTest />} /> 
         </Routes>
       </div>
     </Router>
