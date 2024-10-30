@@ -11,24 +11,54 @@ class HardwareResource:
         }
         return self.collection.insert_one(resource_data).inserted_id
 
-    def checkout_resource(self, resource_id, units):
+    def checkout_resource(self, resource_id, units, project_id):
+        """
+        Checkout resource units to a project
+        """
         resource = self.collection.find_one({"_id": resource_id})
-        if resource and resource["available_units"] >= units:
-            self.collection.update_one(
-                {"_id": resource_id},
-                {"$inc": {"available_units": -units}}
-            )
-            return True
-        return False
+        if not resource or resource.get("available_units", 0) < units:
+            return False
 
-    def checkin_resource(self, resource_id, units):
-        resource = self.collection.find_one({"_id": resource_id})
-        if resource and resource["available_units"] + units <= resource["total_units"]:
+        result = self.collection.update_one(
+            {"_id": resource_id, "available_units": {"$gte": units}},
+            {"$inc": {"available_units": -units}}
+        )
+
+        if result.modified_count > 0:
+            if self.project_model.add_resource(project_id, str(resource_id), units):
+                return True
+            
             self.collection.update_one(
                 {"_id": resource_id},
                 {"$inc": {"available_units": units}}
             )
+        
+        return False
+
+    def checkin_resource(self, resource_id, units, project_id):
+        """
+        Check in resource units from a project
+        """
+        project_resources = self.project_model.get_project_resources(project_id)
+        
+        #Check if resource is in the project
+        if str(resource_id) not in project_resources or project_resources[str(resource_id)] < units:
+            return False
+
+        
+        if not self.project_model.remove_resource(project_id, str(resource_id), units):
+            return False
+
+        result = self.collection.update_one(
+            {"_id": resource_id},
+            {"$inc": {"available_units": units}}
+        )
+
+        if result.modified_count > 0:
             return True
+
+        #Roll it back if unsucessful
+        self.project_model.add_resource(project_id, str(resource_id), units)
         return False
 
     def get_resource(self, resource_id):

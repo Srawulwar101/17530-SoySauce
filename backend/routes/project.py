@@ -23,3 +23,15 @@ def create_project():
 def get_projects(user_id):
     projects = project_model.get_user_projects(user_id)
     return jsonify({"projects": projects}), 200
+
+@project_bp.route("/project_resources/<project_id>", methods=["GET"])
+def get_project_resources(project_id):
+    try:
+        project = project_model.get_project(ObjectId(project_id))
+        if not project:
+            return jsonify({"error": "Project not found"}), 404
+        
+        resources = project.get("resources", {})
+        return jsonify({"resources": resources}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
