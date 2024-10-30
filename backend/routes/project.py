@@ -1,6 +1,9 @@
 from flask import Blueprint, request, jsonify
 from models.project import Project
+from models.resource import HardwareResource
 from db import db  # Import db from db.py
+from bson import ObjectId
+from bson import json_util
 
 project_bp = Blueprint("project_bp", __name__)
 project_model = Project(db)
@@ -22,7 +25,7 @@ def create_project():
 @project_bp.route("/get_projects/<user_id>", methods=["GET"])
 def get_projects(user_id):
     projects = project_model.get_user_projects(user_id)
-    return jsonify({"projects": projects}), 200
+    return json_util.dumps({"projects": projects}), 200, {'ContentType':'application/json'}
 
 @project_bp.route("/project_resources/<project_id>", methods=["GET"])
 def get_project_resources(project_id):

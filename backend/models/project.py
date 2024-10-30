@@ -7,7 +7,8 @@ class Project:
             "user_id": user_id,
             "project_name": project_name,
             "description": description,
-            "project_id": project_id
+            "project_id": project_id,
+            "resources": {} 
         }
         result = self.collection.insert_one(project_data)
         return result.inserted_id
@@ -33,7 +34,6 @@ class Project:
         """
         Remove or reduce resource allocation from a project
         """
-        # First check if project has enough units
         project = self.get_project(project_id)
         if not project or "resources" not in project:
             return False

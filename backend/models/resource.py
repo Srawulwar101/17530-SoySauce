@@ -1,7 +1,11 @@
 # models/resource.py
+#import project because resources need to go inside projects
+from models.project import Project
+
 class HardwareResource:
     def __init__(self, db):
         self.collection = db["resources"]
+        self.project_model = Project(db)
 
     def add_resource(self, name, total_units):
         resource_data = {
@@ -63,3 +67,6 @@ class HardwareResource:
 
     def get_resource(self, resource_id):
         return self.collection.find_one({"_id": resource_id})
+    
+    def get_all_resources(self):
+        return list(self.collection.find())
