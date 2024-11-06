@@ -1,86 +1,92 @@
-import React, { useState } from "react";
-import { createProject, getProjects } from "../../services/api";
-import NavBar from "../elements/Navbar";
-import Button from "react-bootstrap/Button";
+import React, { useState } from 'react';
+import { Button, TextField } from '@mui/material';
 
-const Project = ({ userId }) => {
-  const [projectName, setProjectName] = useState("");
-  const [description, setDescription] = useState("");
-  const [projectId, setProjectId] = useState("");
-  const [projects, setProjects] = useState([]);
-  const [message, setMessage] = useState("");
+const Project = () => {
+    const username = localStorage.getItem("username");
+    const [projectName, setProjectName] = useState('');
+    const [description, setDescription] = useState('');
+    const [message, setMessage] = useState('');
+    const [projects, setProjects] = useState([]);
 
-  // Function to handle project creation
-  const handleCreateProject = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await createProject(
-        userId,
-        projectName,
-        description,
-        projectId
-      );
-      setMessage(response.data.message);
-      loadProjects(); // Reload projects list after creation
-      setProjectName(""); // Clear input fields
-      setDescription("");
-      setProjectId("");
-    } catch (error) {
-      setMessage("Failed to create project.");
-    }
-  };
+    const handleCreateProject = async (e) => {
+        e.preventDefault();
 
-  // Function to load all projects for the user
-  const loadProjects = async () => {
-    try {
-      const response = await getProjects(userId);
-      setProjects(response.data.projects);
-    } catch (error) {
-      console.error("Failed to load projects");
-    }
-  };
+        const newProject = {
+            user_id: username,
+            project_name: projectName,
+            description: description,
+            project_id: `project_${projects.length + 1}`
+        };
 
-  return (
-    <>
-      <NavBar />
-      <div>
-        <h2>Create Project</h2>
-        <form onSubmit={handleCreateProject}>
-          <input
-            type="text"
-            placeholder="Project Name"
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Project ID"
-            value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
-          />
-          <button type="submit">Create Project</button>
-        </form>
-        <p>{message}</p>
+        console.log("Sending request with data:", newProject);
 
-        <h3>Your Projects</h3>
-        <button onClick={loadProjects}>Load Projects</button>
-        <ul>
-          {projects.map((project) => (
-            <li key={project._id}>
-              <strong>{project.project_name}</strong>: {project.description}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <Button href="/">Back to Home</Button>
-    </>
-  );
+        try {
+            const response = await fetch('http://localhost:5000/api/projects/createProject', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newProject),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                setMessage(`Project created with ID: ${result.project_id}`);
+                setProjects([...projects, newProject]);
+            } else {
+                setMessage('Failed to create project');
+            }
+        } catch (error) {
+            console.error('Error creating project:', error);
+            setMessage('Error creating project');
+        }
+    };
+
+    const loadProjects = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/projects');
+            const data = await response.json();
+            setProjects(data);
+        } catch (error) {
+            console.error('Error loading projects:', error);
+        }
+    };
+
+    return (
+        <>
+            <div>
+                <h2>Create a New Project</h2>
+                <form onSubmit={handleCreateProject}>
+                    <TextField
+                        label="Project Name"
+                        value={projectName}
+                        onChange={(e) => setProjectName(e.target.value)}
+                    />
+                    <TextField
+                        label="Description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
+                    <button type="submit">Create Project</button>
+                </form>
+                <p>{message}</p>
+
+                <h3>Your Projects</h3>
+                <button onClick={loadProjects}>Load Projects</button>
+                <ul>
+                    {projects.map((project) => (
+                        <li key={project.project_id}>
+                            <strong>{project.project_name}</strong>: {project.description}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                <Button variant="contained" color="secondary" href="/">Back to Home</Button>
+                <Button variant="contained" color="secondary" href="/login">Back to Login</Button>
+            </div>
+        </>
+    );
 };
 
 export default Project;

@@ -22,9 +22,9 @@ def create_project():
     new_project_id = project_model.create_project(user_id, project_name, description, project_id)
     return jsonify({"message": "Project created successfully", "project_id": str(new_project_id)}), 201
 
-@project_bp.route("/get_projects/<user_id>", methods=["GET"])
-def get_projects(user_id):
-    projects = project_model.get_user_projects(user_id)
+@project_bp.route("/get_projects/<username>", methods=["GET"])
+def get_projects(username):
+    projects = project_model.get_user_projects(username)
     return json_util.dumps({"projects": projects}), 200, {'ContentType':'application/json'}
 
 @project_bp.route("/project_resources/<project_id>", methods=["GET"])
@@ -38,3 +38,26 @@ def get_project_resources(project_id):
         return jsonify({"resources": resources}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+@project_bp.route("/add_user_to_project", methods=["POST"])
+def add_user_to_project():
+    data = request.get_json()
+    project_id = data.get("project_id")
+    new_user_id = data.get("new_user_id")
+    
+    if not project_id or not new_user_id:
+        return jsonify({"error": "Project ID and new user ID are required"}), 400
+    
+    result = project_model.add_user_to_project(project_id, new_user_id)
+    if result:
+        return jsonify({"message": "User added to project successfully"}), 200
+    else:
+        return jsonify({"error": "Failed to add user to project"}), 400
+
+@project_bp.route("/test_route", methods=["GET"])
+def test_route():
+    return jsonify({"message": "Test route is working"}), 200
+
+@project_bp.route("/test", methods=["GET"])
+def test():
+    return jsonify({"message": "Test endpoint is working"}), 200
