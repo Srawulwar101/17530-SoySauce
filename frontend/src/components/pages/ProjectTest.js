@@ -1,92 +1,136 @@
-import React, { useState, useEffect } from 'react';
-import { Button, TextField } from '@mui/material';
+import React, { useState } from 'react';
+import { Button } from '@mui/material';
+import Form from 'react-bootstrap/Form';
 
-const ProjectTest = ({ project, userId }) => {
-    const [joined, setJoined] = useState(false);
-    const [quantity, setQuantity] = useState(0);
-    const [newUserId, setNewUserId] = useState('');
+const ProjectTest = ({ project, onRemoveViewer, onCheckoutResource, onCheckinResource, onAddViewer, joined }) => {
+    const [newViewerId, setNewViewerId] = useState("");
+    const [resourceSet, setResourceSet] = useState("HW Set1");
+    const [units, setUnits] = useState("");
+    const [projectData, setProjectData] = useState(project);
 
-    useEffect(() => {
-        // Check if the user is already part of the project
-        if (project.users.includes(userId)) {
-            setJoined(true);
-        }
-    }, [project.users, userId]);
+    const handleCheckIn = async (e) => {
+        e.preventDefault();
+        const result = await onCheckinResource(resourceSet, units);
+        setUnits("");
 
-    const handleJoinLeave = () => {
-        if (joined) {
-            // Handle leaving the project
-            const updatedUsers = project.users.filter(user => user !== userId);
-            project.users = updatedUsers;
-            setJoined(false);
+        if (result) {
+            setProjectData(prevData => ({
+                ...prevData,
+                [resourceSet === "HW Set1" ? "hw1" : "hw2"]: prevData[resourceSet === "HW Set1" ? "hw1" : "hw2"] + parseInt(units)
+            }));
         } else {
-            // Handle joining the project
-            project.users.push(userId);
-            setJoined(true);
+            console.error("Check-in failed or returned no data");
         }
     };
 
-    const handleCheckIn = () => {
-        console.log(`Checked in ${quantity} items to ${project.name}`);
+    const handleCheckOut = async (e) => {
+        e.preventDefault();
+        const result = await onCheckoutResource(resourceSet, units);
+        setUnits("");
+
+        if (result) {
+            setProjectData(prevData => ({
+                ...prevData,
+                [resourceSet === "HW Set1" ? "hw1" : "hw2"]: Math.max(0, prevData[resourceSet === "HW Set1" ? "hw1" : "hw2"] - parseInt(units))
+            }));
+        } else {
+            console.error("Check-out failed or returned no data");
+        }
     };
 
-    const handleCheckOut = () => {
-        console.log(`Checked out ${quantity} items from ${project.name}`);
-    };
+    const handleAddViewer = async (e) => {
+        e.preventDefault();
+        console.log("Adding viewer with ID:", newViewerId);
+        const result = await onAddViewer(project._id, newViewerId);
+        setNewViewerId("");
 
-    const handleAddUser = async () => {
-        try {
-            const response = await fetch('http://localhost:5000/api/projects/add_user_to_project', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    project_id: project.project_id,
-                    new_user_id: newUserId
-                }),
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log(result.message);
-                project.users.push(newUserId);
-                setNewUserId('');
-            } else {
-                console.error('Failed to add user to project');
-            }
-        } catch (error) {
-            console.error('Error adding user to project:', error);
+        if (result) {
+            console.log("Viewer added successfully");
+            setProjectData(prevData => ({
+                ...prevData,
+                viewers: [...prevData.viewers, newViewerId]
+            }));
+        } else {
+            console.error("Failed to add viewer");
         }
     };
 
     return (
         <div style={{ border: '1px solid black', padding: '10px', margin: '10px' }}>
-            <h2>{project.name}</h2>
-            <p>Users: {project.users.join(', ') || 'No users'}</p>
-            <p>HWSet1: {project.hw1}/100</p>
-            <p>HWSet2: {project.hw2}/100</p>
+            <h2>{projectData.project_name}</h2>
+            <p>Users: {(projectData.viewers || []).join(', ') || 'No users'}</p>
+            <p>HWSet1: {projectData.hw1 > 0 ? projectData.hw1 : '-'} / 100</p>
+            <p>HWSet2: {projectData.hw2 > 0 ? projectData.hw2 : '-'} / 100</p>
 
-            <TextField
-                type="number"
-                label="Quantity"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-            />
-            <Button variant="contained" color="primary" onClick={handleCheckIn}>Check In</Button>
-            <Button variant="contained" color="secondary" onClick={handleCheckOut}>Check Out</Button>
-            <Button variant="contained" color="default" onClick={handleJoinLeave}>
-                {joined ? 'Leave' : 'Join'}
-            </Button>
+            {joined ? (
+                <>
+                    <Form onSubmit={handleAddViewer}>
+                        <Form.Group>
+                            <Form.Label>Add Viewer User ID</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={newViewerId}
+                                onChange={(e) => setNewViewerId(e.target.value)}
+                                style={{ marginBottom: '10px' }}
+                            />
+                        </Form.Group>
+                        <Button variant="contained" color="primary" type="submit">Add Viewer</Button>
+                    </Form>
 
-            <div style={{ marginTop: '10px' }}>
-                <TextField
-                    label="New User ID"
-                    value={newUserId}
-                    onChange={(e) => setNewUserId(e.target.value)}
-                />
-                <Button variant="contained" color="primary" onClick={handleAddUser}>Add User</Button>
-            </div>
+                    <h3>Manage Resources</h3>
+                    <Form onSubmit={handleCheckOut}>
+                        <Form.Group>
+                            <Form.Label>Select Resource Set</Form.Label>
+                            <Form.Control
+                                as="select"
+                                value={resourceSet}
+                                onChange={(e) => setResourceSet(e.target.value)}
+                                style={{ marginBottom: '10px' }}
+                            >
+                                <option value="HW Set1">HW Set1</option>
+                                <option value="HW Set2">HW Set2</option>
+                            </Form.Control>
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Units</Form.Label>
+                            <Form.Control
+                                type="number"
+                                value={units}
+                                onChange={(e) => setUnits(e.target.value)}
+                                style={{ marginBottom: '10px' }}
+                            />
+                        </Form.Group>
+                        <Button variant="contained" color="primary" type="submit">Check Out</Button>
+                    </Form>
+
+                    <Form onSubmit={handleCheckIn}>
+                        <Form.Group>
+                            <Form.Label>Select Resource Set</Form.Label>
+                            <Form.Control
+                                as="select"
+                                value={resourceSet}
+                                onChange={(e) => setResourceSet(e.target.value)}
+                                style={{ marginBottom: '10px' }}
+                            >
+                                <option value="HW Set1">HW Set1</option>
+                                <option value="HW Set2">HW Set2</option>
+                            </Form.Control>
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Units</Form.Label>
+                            <Form.Control
+                                type="number"
+                                value={units}
+                                onChange={(e) => setUnits(e.target.value)}
+                                style={{ marginBottom: '10px' }}
+                            />
+                        </Form.Group>
+                        <Button variant="contained" color="secondary" type="submit">Check In</Button>
+                    </Form>
+                </>
+            ) : (
+                <p>You must join the project to interact with it.</p>
+            )}
         </div>
     );
 };

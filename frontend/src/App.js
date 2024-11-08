@@ -1,30 +1,31 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Signup from "./components/pages/Signup";
 import Login from "./components/pages/Login";
-import Project from "./components/pages/Project";
-import Resource from "./components/pages/Resource";
+//import Project from "./components/pages/Project";
+//import Resource from "./components/pages/Resource";
 import Home from "./components/pages/Home";
 import ProjectsTest from "./components/pages/ProjectsTest";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-    const isAuthenticated = !!localStorage.getItem("token");
+  // Placeholder for userId - In a real app, this would come from user authentication
 
-    return (
-        <Router>
-            <div className="App">
-                <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
-                    <Route path="/projects" element={isAuthenticated ? <Project /> : <Navigate to="/login" />} />
-                    <Route path="/resources" element={isAuthenticated ? <Resource /> : <Navigate to="/login" />} />
-                    <Route path="/test" element={isAuthenticated ? <ProjectsTest /> : <Navigate to="/login" />} />
-                    <Route path="*" element={<Navigate to="/login" />} /> {/* Default route */}
-                </Routes>
-            </div>
-        </Router>
-    );
+  return (
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/test"
+            element={<ProtectedRoute element={ProjectsTest} />}
+          />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
 export default App;

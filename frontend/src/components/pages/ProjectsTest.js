@@ -1,100 +1,211 @@
-import React, { useState, useEffect } from 'react';
-import ProjectTest from './ProjectTest';
+import React, { useEffect, useState } from 'react';
+import { getProjects, createProject, addViewer, removeViewer, checkoutResource, checkinResource, joinProject, leaveProject } from '../../services/api'; // Import necessary functions
 import NavBar from "../elements/Navbar";
-import { Button, TextField } from '@mui/material';
+import ProjectTest from './ProjectTest';
+import { Button, Form, Container } from 'react-bootstrap';
 
-const ProjectsTest = () => {
-    const username = localStorage.getItem("username");
-    const [projectList, setProjectList] = useState([]);
-    const [newProjectName, setNewProjectName] = useState('');
-    const [newProjectDescription, setNewProjectDescription] = useState('');
+const Projects = () => {
+    const [projects, setProjects] = useState([]);
+    const [message, setMessage] = useState("");
+    const [userId] = useState(localStorage.getItem("userId") || ""); // Retrieve userId from local storage
+    const [projectName, setProjectName] = useState("");
+    const [description, setDescription] = useState("");
+    const [projectId, setProjectId] = useState("");
 
     useEffect(() => {
-        // Fetch projects from the backend when the component mounts
         const fetchProjects = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/projects/get_projects/' + username);
-                const data = await response.json();
-                setProjectList(data.projects);
+                const response = await getProjects(userId);
+                setProjects(response.data.projects);
+                if (response.data.projects.length > 0) {
+                    setProjectId(response.data.projects[0]._id); // Set the projectId to the first project or handle selection
+                }
             } catch (error) {
-                console.error('Error fetching projects:', error);
+                setMessage("Failed to fetch projects.");
             }
         };
 
         fetchProjects();
-    }, [username]);
+    }, [userId]);
 
-    const addNewProject = async () => {
-        const newProject = { name: newProjectName, hw1: 0, hw2: 0, users: [username], joined: false, userId: username };
-        
-        // Make API call to backend to create the project
+    const handleCreateProject = async (e) => {
+        e.preventDefault();
+        console.log("Creating project with userId:", userId); // Log the userId
         try {
-            const response = await fetch('http://localhost:5000/api/projects/createProject', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    user_id: username,
-                    project_name: newProjectName,
-                    description: newProjectDescription,
-                    project_id: `project_${projectList.length + 1}`
-                }),
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                const createdProject = {
-                    name: newProjectName,
-                    hw1: 0,
-                    hw2: 0,
-                    users: [username],
-                    joined: false,
-                    userId: username,
-                    project_id: result.project_id
-                };
-                setProjectList(prevProjectList => {
-                    const updatedProjectList = [...prevProjectList, createdProject];
-                    return updatedProjectList;
-                });  // Update the state with the new project
-            } else {
-                console.error('Failed to create project');
-            }
+            const response = await createProject(userId, projectName, description, projectId);
+            console.log("Project creation response:", response.data); // Log the response
+            setMessage(response.data.message);
+            // Refresh the project list after creating a new project
+            const updatedProjects = await getProjects(userId);
+            setProjects(updatedProjects.data.projects);
+            // Clear the form fields
+            setProjectName("");
+            setDescription("");
+            setProjectId("");
         } catch (error) {
-            console.error('Error adding new project:', error);
+            console.error("Error creating project:", error); // Log the error
+            setMessage("Failed to create project.");
+        }
+    };
+
+    const handleAddViewer = async (projectId, viewerId) => {
+        console.log("Attempting to add viewer:", { projectId, viewerId }); // Log the attempt
+        try {
+            await addViewer(projectId, viewerId);
+            setMessage("Viewer added successfully.");
+            console.log("Viewer added successfully:", viewerId); // Log success
+        } catch (error) {
+            console.error("Failed to add viewer:", error); // Log the error
+            setMessage("Failed to add viewer.");
+        }
+    };
+
+    const handleRemoveViewer = async (projectId, viewerId) => {
+        try {
+            await removeViewer(projectId, viewerId);
+            setMessage("Viewer removed successfully.");
+        } catch (error) {
+            setMessage("Failed to remove viewer.");
+        }
+    };
+
+    const handleCheckoutResource = async (projectId, resourceSet, units) => {
+        const resourceId = resourceSet === "HW Set1" ? "672b88e1053d6a26a995a710" : "672b88e5053d6a26a995a711"; // Replace with actual resource IDs
+        const projectIdString = projectId ? projectId.$oid || projectId : ""; // Extract project ID as a string
+        console.log("Checking out resource:", { resource_id: resourceId, units, project_id: projectIdString }); // Log the payload
+        try {
+            const response = await checkoutResource(resourceId, units, projectIdString); // Pass the project ID as a string
+            setMessage(response.data.message);
+    
+            // Update the state of the specific project
+            setProjects(prevProjects => prevProjects.map(project => 
+                project._id === projectId ? { 
+                    ...project, 
+                    [resourceSet === "HW Set1" ? "hw1" : "hw2"]: Math.max(0, project[resourceSet === "HW Set1" ? "hw1" : "hw2"] - parseInt(units))
+                } : project
+            ));
+        } catch (error) {
+            console.error("Checkout error:", error); // Log the error for debugging
+            setMessage("Failed to check out resource.");
+        }
+    };
+    
+    const handleCheckinResource = async (projectId, resourceSet, units) => {
+        const resourceId = resourceSet === "HW Set1" ? "672b88e1053d6a26a995a710" : "672b88e5053d6a26a995a711"; // Replace with actual resource IDs
+        const projectIdString = projectId ? projectId.$oid || projectId : ""; // Extract project ID as a string
+        console.log("Checking in resource:", { resource_id: resourceId, units, project_id: projectIdString }); // Log the payload
+        try {
+            const response = await checkinResource(resourceId, units, projectIdString); // Pass the project ID as a string
+            setMessage(response.data.message);
+    
+            // Update the state of the specific project
+            setProjects(prevProjects => prevProjects.map(project => 
+                project._id === projectId ? { 
+                    ...project, 
+                    [resourceSet === "HW Set1" ? "hw1" : "hw2"]: project[resourceSet === "HW Set1" ? "hw1" : "hw2"] + parseInt(units)
+                } : project
+            ));
+        } catch (error) {
+            console.error("Checkin error:", error); // Log the error for debugging
+            setMessage("Failed to check in resource.");
+        }
+    };
+
+    const handleJoinProject = async (projectId) => {
+        const userId = localStorage.getItem("userId");
+        try {
+            await joinProject(projectId, userId);
+            setMessage("Successfully joined the project.");
+            
+            // Update the state of the specific project
+            setProjects(prevProjects => prevProjects.map(project => 
+                project._id === projectId ? { ...project, joined: true } : project
+            ));
+        } catch (error) {
+            console.error("Failed to join project:", error);
+            setMessage("Failed to join project.");
+        }
+    };
+
+    const handleLeaveProject = async (projectId) => {
+        const userId = localStorage.getItem("userId");
+        try {
+            await leaveProject(projectId, userId);
+            setMessage("Successfully left the project.");
+            
+            // Update the state of the specific project
+            setProjects(prevProjects => prevProjects.map(project => 
+                project._id === projectId ? { ...project, joined: false } : project
+            ));
+        } catch (error) {
+            console.error("Failed to leave project:", error);
+            setMessage("Failed to leave project.");
         }
     };
 
     return (
         <>
             <NavBar />
-            <div>
+            <Container>
                 <h1>Projects</h1>
-                <TextField
-                    label="Project Name"
-                    value={newProjectName}
-                    onChange={(e) => setNewProjectName(e.target.value)}
-                />
-                <TextField
-                    label="Project Description"
-                    value={newProjectDescription}
-                    onChange={(e) => setNewProjectDescription(e.target.value)}
-                />
-                <Button variant="contained" color="primary" onClick={addNewProject}>Add New Project</Button>
-                {projectList.map((project, index) => (
-                    <ProjectTest
-                        key={index}
-                        project={project}
-                        userId={username}
-                    />
-                ))}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                <Button variant="contained" color="secondary" href="/">Back to Home</Button>
-                <Button variant="contained" color="secondary" href="/login">Back to Login</Button>
-            </div>
+                {message && <p>{message}</p>}
+                <Form onSubmit={handleCreateProject}>
+                    <h2>Create New Project</h2>
+                    <Form.Group controlId="formProjectName">
+                        <Form.Label>Project Name</Form.Label>
+                        <Form.Control
+                            type="text"
+                            placeholder="Enter Project Name"
+                            value={projectName}
+                            onChange={(e) => setProjectName(e.target.value)}
+                        />
+                    </Form.Group>
+                    <Form.Group controlId="formDescription">
+                        <Form.Label>Description</Form.Label>
+                        <Form.Control
+                            type="text"
+                            placeholder="Enter Description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                        />
+                    </Form.Group>
+                    <Form.Group controlId="formProjectId">
+                        <Form.Label>Project ID</Form.Label>
+                        <Form.Control
+                            type="text"
+                            placeholder="Enter Project ID"
+                            value={projectId}
+                            onChange={(e) => setProjectId(e.target.value)}
+                        />
+                    </Form.Group>
+                    <Button variant="primary" type="submit">
+                        Create Project
+                    </Button>
+                </Form>
+
+                <div>
+                    {projects.length === 0 ? (
+                        <p>No projects found.</p>
+                    ) : (
+                        projects.map((project) => (
+                            <div key={project._id}>
+                                <ProjectTest 
+                                    project={project} 
+                                    onRemoveViewer={handleRemoveViewer} 
+                                    onAddViewer={handleAddViewer} 
+                                    onCheckoutResource={(resourceSet, units) => handleCheckoutResource(project._id, resourceSet, units)} 
+                                    onCheckinResource={(resourceSet, units) => handleCheckinResource(project._id, resourceSet, units)} 
+                                    joined={project.joined} // Pass the joined state
+                                />
+                                <Button onClick={() => handleJoinProject(project._id)}>Join Project</Button>
+                                <Button onClick={() => handleLeaveProject(project._id)}>Leave Project</Button>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </Container>
         </>
     );
 };
 
-export default ProjectsTest;
+export default Projects;

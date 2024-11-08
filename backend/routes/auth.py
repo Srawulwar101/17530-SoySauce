@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from models.user import User
 from db import db
@@ -33,12 +33,6 @@ def login():
             'user_id': str(user._id),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
         }, 'your_secret_key', algorithm='HS256')
-        return jsonify({"message": "Login successful", "token": token}), 200
+        return jsonify({"message": "Login successful", "token": token, "userId": str(user._id)}), 200
     else:
         return jsonify({"message": "Invalid credentials"}), 401
-
-@auth_bp.route('/current_user', methods=['GET'])
-def current_user():
-    if 'username' in session:
-        return jsonify({"username": session['username']})
-    return jsonify({"error": "User not logged in"}), 401

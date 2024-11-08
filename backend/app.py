@@ -1,14 +1,18 @@
-from flask import Flask
+import logging
+from flask import Flask, request
 from flask_cors import CORS
 from config import Config
 from routes.auth import auth_bp
-from models.project import project_bp  # Ensure this import is correct
+from routes.project import project_bp
 from routes.resource import resource_bp
 from db import db
 
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app)  # Enable CORS for the app
+CORS(app)  # Enable CORS for all routes
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
 
 # Register Blueprints
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
@@ -20,6 +24,4 @@ def home():
     return "Welcome to the HaaS PoC API!"
 
 if __name__ == "__main__":
-    for rule in app.url_map.iter_rules():
-        print(f"{rule.methods} {rule.rule}")
     app.run(debug=True)
