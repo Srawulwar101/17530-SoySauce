@@ -59,8 +59,8 @@ const ProjectTest = ({ project, onRemoveViewer, onCheckoutResource, onCheckinRes
         <div style={{ border: '1px solid black', padding: '10px', margin: '10px' }}>
             <h2>{project.project_name}</h2>
             <p>Users: {(project.viewers || []).join(', ') || 'No users'}</p>
-            <p>HWSet1: {project.hw1 > 0 ? project.hw1 : '-'} / 100</p>
-            <p>HWSet2: {project.hw2 > 0 ? project.hw2 : '-'} / 100</p>
+            <p>HWSet1: {project.resources["672b88e1053d6a26a995a710"] > 0 ? project.resources["672b88e1053d6a26a995a710"] : '-'} / 100</p>
+            <p>HWSet2: {project.resources["672b88e5053d6a26a995a711"] > 0 ? project.resources["672b88e5053d6a26a995a711"] : '-'} / 100</p>
 
             {joined ? (
                 <>
