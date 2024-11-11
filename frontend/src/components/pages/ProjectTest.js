@@ -57,10 +57,10 @@ const ProjectTest = ({ project, onRemoveViewer, onCheckoutResource, onCheckinRes
 
     return (
         <div style={{ border: '1px solid black', padding: '10px', margin: '10px' }}>
-            <h2>{projectData.project_name}</h2>
-            <p>Users: {(projectData.viewers || []).join(', ') || 'No users'}</p>
-            <p>HWSet1: {projectData.hw1 > 0 ? projectData.hw1 : '-'} / 100</p>
-            <p>HWSet2: {projectData.hw2 > 0 ? projectData.hw2 : '-'} / 100</p>
+            <h2>{project.project_name}</h2>
+            <p>Users: {(project.viewers || []).join(', ') || 'No users'}</p>
+            <p>HWSet1: {project.hw1 > 0 ? project.hw1 : '-'} / 100</p>
+            <p>HWSet2: {project.hw2 > 0 ? project.hw2 : '-'} / 100</p>
 
             {joined ? (
                 <>

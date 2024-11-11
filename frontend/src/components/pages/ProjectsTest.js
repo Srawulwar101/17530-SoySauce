@@ -16,19 +16,23 @@ const Projects = () => {
         const fetchProjects = async () => {
             try {
                 const response = await getProjects(userId);
-                setProjects(response.data.projects);
-                if (response.data.projects.length > 0) {
-                    const firstProjectId = response.data.projects[0]._id;
-                    console.log("Setting projectId to:", firstProjectId); // Log the projectId being set
-                    setProjectId(firstProjectId.toString()); // Ensure projectId is a string
-                }
+                console.log("Fetched projects:", response.data.projects); // Log fetched projects to confirm data
+    
+                setProjects(response.data.projects.map(project => ({
+                    ...project,
+                    // Check if the current user's ID is in the joined_users array
+                    joined: project.joined_users && project.joined_users.includes(userId)
+                })));
             } catch (error) {
                 setMessage("Failed to fetch projects.");
+                console.error("Fetch projects error:", error);
             }
         };
-
+    
         fetchProjects();
     }, [userId]);
+    
+    
 
     const handleCreateProject = async (e) => {
         e.preventDefault();
