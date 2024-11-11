@@ -20,7 +20,7 @@ const Login = () => {
       if (response.status === 200) {
         localStorage.setItem("token", response.data.token); // Store the token
         localStorage.setItem("userId", response.data.userId); // Store the user ID
-        navigate("/");
+        navigate("/home");
       }
     } catch (error) {
       setMessage("Login failed. Please check your credentials.");

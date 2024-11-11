@@ -18,7 +18,9 @@ const Projects = () => {
                 const response = await getProjects(userId);
                 setProjects(response.data.projects);
                 if (response.data.projects.length > 0) {
-                    setProjectId(response.data.projects[0]._id); // Set the projectId to the first project or handle selection
+                    const firstProjectId = response.data.projects[0]._id;
+                    console.log("Setting projectId to:", firstProjectId); // Log the projectId being set
+                    setProjectId(firstProjectId.toString()); // Ensure projectId is a string
                 }
             } catch (error) {
                 setMessage("Failed to fetch projects.");
@@ -31,6 +33,7 @@ const Projects = () => {
     const handleCreateProject = async (e) => {
         e.preventDefault();
         console.log("Creating project with userId:", userId); // Log the userId
+        console.log("Current projectId:", projectId); // Log the current projectId
         try {
             const response = await createProject(userId, projectName, description, projectId);
             console.log("Project creation response:", response.data); // Log the response
@@ -41,7 +44,7 @@ const Projects = () => {
             // Clear the form fields
             setProjectName("");
             setDescription("");
-            setProjectId("");
+            setProjectId(""); // Ensure projectId is cleared as a string
         } catch (error) {
             console.error("Error creating project:", error); // Log the error
             setMessage("Failed to create project.");
@@ -81,7 +84,9 @@ const Projects = () => {
             setProjects(prevProjects => prevProjects.map(project => 
                 project._id === projectId ? { 
                     ...project, 
-                    [resourceSet === "HW Set1" ? "hw1" : "hw2"]: Math.max(0, project[resourceSet === "HW Set1" ? "hw1" : "hw2"] - parseInt(units))
+                    [resourceSet === "HW Set1" ? "hw1" : "hw2"]: Math.max(0, project[resourceSet === "HW Set1" ? "hw1" : "hw2"] - parseInt(units)),
+                    // Ensure to update the total resources for display
+                    totalResources: (project[resourceSet === "HW Set1" ? "hw1" : "hw2"] - parseInt(units)) + ' / 100'
                 } : project
             ));
         } catch (error) {
@@ -102,7 +107,9 @@ const Projects = () => {
             setProjects(prevProjects => prevProjects.map(project => 
                 project._id === projectId ? { 
                     ...project, 
-                    [resourceSet === "HW Set1" ? "hw1" : "hw2"]: project[resourceSet === "HW Set1" ? "hw1" : "hw2"] + parseInt(units)
+                    [resourceSet === "HW Set1" ? "hw1" : "hw2"]: project[resourceSet === "HW Set1" ? "hw1" : "hw2"] + parseInt(units),
+                    // Ensure to update the total resources for display
+                    totalResources: (project[resourceSet === "HW Set1" ? "hw1" : "hw2"] + parseInt(units)) + ' / 100'
                 } : project
             ));
         } catch (error) {
@@ -145,7 +152,7 @@ const Projects = () => {
 
     return (
         <>
-            <NavBar />
+            <NavBar userId={userId} />
             <Container>
                 <h1>Projects</h1>
                 {message && <p>{message}</p>}
@@ -174,7 +181,7 @@ const Projects = () => {
                         <Form.Control
                             type="text"
                             placeholder="Enter Project ID"
-                            value={projectId}
+                            value={projectId || ""} // Ensure projectId is a string
                             onChange={(e) => setProjectId(e.target.value)}
                         />
                     </Form.Group>
