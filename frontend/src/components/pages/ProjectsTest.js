@@ -62,6 +62,8 @@ const Projects = () => {
             await addViewer(projectId, viewerId);
             setMessage("Viewer added successfully.");
             console.log("Viewer added successfully:", viewerId); // Log success
+
+            fetchProjects(); // Fetch projects again to update the joined status
         } catch (error) {
             console.error("Failed to add viewer:", error); // Log the error
             setMessage("Failed to add viewer.");
