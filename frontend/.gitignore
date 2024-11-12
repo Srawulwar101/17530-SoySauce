@@ -8,6 +8,13 @@
 # testing
 /coverage
 
+# environment variables
+.env
+
+# dockerfiles
+Dockerfile
+.dockerignore
+
 # production
 /build
 
