@@ -1,7 +1,7 @@
 import logging
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
-from config import Config
+from .config import Config
 from routes.auth import auth_bp
 from routes.project import project_bp
 from routes.resource import resource_bp
