@@ -11,6 +11,7 @@ const Projects = () => {
     const [projectName, setProjectName] = useState("");
     const [description, setDescription] = useState("");
     const [projectId, setProjectId] = useState("");
+    const [joinProjectId, setJoinProjectId] = useState(""); // State for the join project ID
 
     const fetchProjects = async () => {
         try {
@@ -42,7 +43,7 @@ const Projects = () => {
         try {
             const response = await createProject(userId, projectName, description, projectId);
             console.log("Project creation response:", response.data); // Log the response
-            setMessage(response.data.message);
+            setMessage(response.data.message); // This line sets the message to "Project created successfully"
             // Refresh the project list after creating a new project
             const updatedProjects = await getProjects(userId);
             setProjects(updatedProjects.data.projects);
@@ -50,9 +51,36 @@ const Projects = () => {
             setProjectName("");
             setDescription("");
             setProjectId(""); // Ensure projectId is cleared as a string
+
+            fetchProjects(); // Fetch projects again to update the joined status
         } catch (error) {
             console.error("Error creating project:", error); // Log the error
-            setMessage("Failed to create project.");
+            if (error.response && error.response.data && error.response.data.error === "ProjectID already exists") {
+                setMessage("ProjectID already exists.");
+            } else {
+                setMessage("Failed to create project.");
+            }
+        }
+    };
+
+    const handleJoinProjectById = async (e) => {
+        e.preventDefault();
+        console.log("Joining project with ID:", joinProjectId); // Log the join project ID
+        try {
+            await addViewer(joinProjectId, userId);
+            setMessage("Successfully joined project.");
+            setJoinProjectId(""); // Clear the join project ID field
+
+            fetchProjects(); // Fetch projects again to update the joined status
+        } catch (error) {
+            console.error("Error joining project:", error); // Log the error
+            if (error.response && error.response.data && error.response.data.error === "No matching projectID") {
+                setMessage("Failed to join project: No matching projectID.");
+            } else if (error.response && error.response.data && error.response.data.error === "User is already a viewer of this project") {
+                setMessage("User is already a viewer of this project.");
+            } else {
+                setMessage("Failed to join project.");
+            }
         }
     };
 
@@ -205,6 +233,22 @@ const Projects = () => {
                     </Form.Group>
                     <Button variant="primary" type="submit">
                         Create Project
+                    </Button>
+                </Form>
+
+                <Form onSubmit={handleJoinProjectById}>
+                    <h2>Join Project by ID</h2>
+                    <Form.Group controlId="formJoinProjectId">
+                        <Form.Label>Project ID</Form.Label>
+                        <Form.Control
+                            type="text"
+                            placeholder="Enter Project ID"
+                            value={joinProjectId}
+                            onChange={(e) => setJoinProjectId(e.target.value)}
+                        />
+                    </Form.Group>
+                    <Button variant="primary" type="submit">
+                        Join Project
                     </Button>
                 </Form>
 

@@ -8,6 +8,13 @@ class Project:
         self.collection = db["projects"]
 
     def create_project(self, user_id, project_name, description, project_id):
+
+        # Check if the project_id already exists
+        existing_project = self.collection.find_one({"project_id": project_id})
+        if existing_project:
+            logger.warning("Project ID %s already exists. Project not created.", project_id)
+            return None  # Or raise an exception if preferred
+
         project_data = {
             "user_id": user_id,
             "project_name": project_name,
@@ -27,11 +34,25 @@ class Project:
     def get_project(self, project_id):
         logger.debug("Getting project with ID: %s", project_id)
         try:
-            # Convert project_id to ObjectId if it's a valid string
-            if isinstance(project_id, str):
-                project_id = ObjectId(project_id)
+            project = None
+            if ObjectId.is_valid(project_id):
+            # Try to find the project by _id using ObjectId
+                try:
+                    project_object_id = ObjectId(project_id)
+                    project = self.collection.find_one({"_id": project_object_id})
+                    logger.debug("Project retrieved by _id: %s", project)
+                    return project
+                except Exception as e:
+                    logger.error("Error converting project_id to ObjectId: %s", str(e))
+            logger.debug("This is the value of project_id: %s", project_id)
             project = self.collection.find_one({"_id": project_id})
-            logger.debug("Project retrieved: %s", project)
+            logger.debug("Project retrieved1: %s", project)
+            if not project:
+                # If not found by _id, try finding by project_id as a string
+                logger.debug("HEHRHHEHRHEHRHEHRHE")
+                project = self.collection.find_one({"project_id": str(project_id)})
+            
+            logger.debug("Project retrieved2: %s", project)
             return project
         except Exception as e:
             logger.error("Error retrieving project: %s", str(e))

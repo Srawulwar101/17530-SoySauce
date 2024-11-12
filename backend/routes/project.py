@@ -30,6 +30,8 @@ def create_project():
     
     try:
         new_project_id = project_model.create_project(user_id, project_name, description, project_id)
+        if new_project_id is None:
+            return jsonify({"error": "ProjectID already exists"}), 400
         logging.debug(f"Project created with ID: {new_project_id}")
         return jsonify({"message": "Project created successfully", "project_id": str(new_project_id)}), 201
     except Exception as e:
