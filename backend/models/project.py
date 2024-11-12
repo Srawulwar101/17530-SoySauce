@@ -8,6 +8,12 @@ class Project:
         self.collection = db["projects"]
 
     def create_project(self, user_id, project_name, description, project_id):
+        # Check if the project_id already exists
+        existing_project = self.collection.find_one({"project_id": project_id})
+        if existing_project:
+            logger.warning("Project ID %s already exists. Project not created.", project_id)
+            return None  # Or raise an exception if preferred
+
         project_data = {
             "user_id": user_id,
             "project_name": project_name,
