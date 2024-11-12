@@ -8,7 +8,6 @@ class Project:
         self.collection = db["projects"]
 
     def create_project(self, user_id, project_name, description, project_id):
-
         # Check if the project_id already exists
         existing_project = self.collection.find_one({"project_id": project_id})
         if existing_project:
