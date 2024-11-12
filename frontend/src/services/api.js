@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:5000/api';
+const API_URL = 'https://frozen-sea-50755-1f37732e6aa8.herokuapp.com/api';
 
 export const signup = (username, password) => {
     return axios.post(`${API_URL}/auth/signup`, { username, password });
