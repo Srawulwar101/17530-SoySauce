@@ -4,6 +4,7 @@ import NavBar from "../elements/Navbar";
 import ProjectTest from './ProjectTest';
 import { Button, Form, Container } from 'react-bootstrap';
 
+
 const Projects = () => {
     const [projects, setProjects] = useState([]);
     const [message, setMessage] = useState("");
@@ -13,10 +14,12 @@ const Projects = () => {
     const [projectId, setProjectId] = useState("");
     const [joinProjectId, setJoinProjectId] = useState(""); // State for the join project ID
 
+
     const fetchProjects = async () => {
         try {
             const response = await getProjects(userId);
             console.log("Fetched projects:", response.data.projects); // Log fetched projects to confirm data
+
 
             setProjects(response.data.projects.map(project => ({
                 ...project,
@@ -29,12 +32,14 @@ const Projects = () => {
         }
     };
 
+
     useEffect(() => {
-    
+   
         fetchProjects();
     }, [userId]);
-    
-    
+   
+   
+
 
     const handleCreateProject = async (e) => {
         e.preventDefault();
@@ -52,6 +57,7 @@ const Projects = () => {
             setDescription("");
             setProjectId(""); // Ensure projectId is cleared as a string
 
+
             fetchProjects(); // Fetch projects again to update the joined status
         } catch (error) {
             console.error("Error creating project:", error); // Log the error
@@ -63,6 +69,7 @@ const Projects = () => {
         }
     };
 
+
     const handleJoinProjectById = async (e) => {
         e.preventDefault();
         console.log("Joining project with ID:", joinProjectId); // Log the join project ID
@@ -70,6 +77,7 @@ const Projects = () => {
             await addViewer(joinProjectId, userId);
             setMessage("Successfully joined project.");
             setJoinProjectId(""); // Clear the join project ID field
+
 
             fetchProjects(); // Fetch projects again to update the joined status
         } catch (error) {
@@ -84,6 +92,7 @@ const Projects = () => {
         }
     };
 
+
     const handleAddViewer = async (projectId, viewerId) => {
         console.log("Attempting to add viewer:", { projectId, viewerId }); // Log the attempt
         try {
@@ -91,12 +100,14 @@ const Projects = () => {
             setMessage("Viewer added successfully.");
             console.log("Viewer added successfully:", viewerId); // Log success
 
+
             fetchProjects(); // Fetch projects again to update the joined status
         } catch (error) {
             console.error("Failed to add viewer:", error); // Log the error
             setMessage("Failed to add viewer.");
         }
     };
+
 
     const handleRemoveViewer = async (projectId, viewerId) => {
         try {
@@ -107,6 +118,7 @@ const Projects = () => {
         }
     };
 
+
     const handleCheckoutResource = async (projectId, resourceSet, units) => {
         const resourceId = resourceSet === "HW Set1" ? "672b88e1053d6a26a995a710" : "672b88e5053d6a26a995a711"; // Replace with actual resource IDs
         const projectIdString = projectId ? projectId.$oid || projectId : ""; // Extract project ID as a string
@@ -114,9 +126,10 @@ const Projects = () => {
         try {
             const response = await checkoutResource(resourceId, units, projectIdString); // Pass the project ID as a string
             setMessage(response.data.message);
-    
+   
             const unitCount = parseInt(units, 10);
             console.log("Unit count after parsing:", unitCount);
+
 
             // Update only the specific project's resource count and joined status
             setProjects(prevProjects =>
@@ -131,14 +144,16 @@ const Projects = () => {
                 )
             );
 
+
             fetchProjects(); // Fetch projects again to update the joined status
+
 
         } catch (error) {
             console.error("Checkout error:", error); // Log the error for debugging
             setMessage("Failed to check out resource.");
         }
     };
-    
+   
     const handleCheckinResource = async (projectId, resourceSet, units) => {
         const resourceId = resourceSet === "HW Set1" ? "672b88e1053d6a26a995a710" : "672b88e5053d6a26a995a711"; // Replace with actual resource IDs
         const projectIdString = projectId ? projectId.$oid || projectId : ""; // Extract project ID as a string
@@ -146,16 +161,17 @@ const Projects = () => {
         try {
             const response = await checkinResource(resourceId, units, projectIdString); // Pass the project ID as a string
             setMessage(response.data.message);
-    
+   
             // Update the state of the specific project
-            setProjects(prevProjects => prevProjects.map(project => 
-                project._id === projectId ? { 
-                    ...project, 
+            setProjects(prevProjects => prevProjects.map(project =>
+                project._id === projectId ? {
+                    ...project,
                     [resourceSet === "HW Set1" ? "hw1" : "hw2"]: project[resourceSet === "HW Set1" ? "hw1" : "hw2"] + parseInt(units),
                     // Ensure to update the total resources for display
                     totalResources: (project[resourceSet === "HW Set1" ? "hw1" : "hw2"] + parseInt(units)) + ' / 100'
                 } : project
             ));
+
 
             fetchProjects(); // Fetch projects again to update the joined status
         } catch (error) {
@@ -164,14 +180,15 @@ const Projects = () => {
         }
     };
 
+
     const handleJoinProject = async (projectId) => {
         const userId = localStorage.getItem("userId");
         try {
             await joinProject(projectId, userId);
             setMessage("Successfully joined the project.");
-            
+           
             // Update the state of the specific project
-            setProjects(prevProjects => prevProjects.map(project => 
+            setProjects(prevProjects => prevProjects.map(project =>
                 project._id === projectId ? { ...project, joined: true } : project
             ));
         } catch (error) {
@@ -180,14 +197,15 @@ const Projects = () => {
         }
     };
 
+
     const handleLeaveProject = async (projectId) => {
         const userId = localStorage.getItem("userId");
         try {
             await leaveProject(projectId, userId);
             setMessage("Successfully left the project.");
-            
+           
             // Update the state of the specific project
-            setProjects(prevProjects => prevProjects.map(project => 
+            setProjects(prevProjects => prevProjects.map(project =>
                 project._id === projectId ? { ...project, joined: false } : project
             ));
         } catch (error) {
@@ -195,6 +213,7 @@ const Projects = () => {
             setMessage("Failed to leave project.");
         }
     };
+
 
     return (
         <>
@@ -236,6 +255,7 @@ const Projects = () => {
                     </Button>
                 </Form>
 
+
                 <Form onSubmit={handleJoinProjectById}>
                     <h2>Join Project by ID</h2>
                     <Form.Group controlId="formJoinProjectId">
@@ -252,27 +272,31 @@ const Projects = () => {
                     </Button>
                 </Form>
 
+
                 <div>
                     {projects.length === 0 ? (
                         <p>No projects found.</p>
                     ) : (
                         projects.map((project, index) => {
 
-                            const uniqueKey = project._id && project._id.$oid 
-                                ? project._id.$oid 
+
+                            const uniqueKey = project._id && project._id.$oid
+                                ? project._id.$oid
                                 : JSON.stringify(project._id) || `${project.project_name}-${index}`;
                             console.log("Rendering project with key:", uniqueKey);
 
+
                             return (
                                 <div key={uniqueKey}>
-                                    
+                                   
 
-                                    <ProjectTest 
-                                        project={project} 
-                                        onRemoveViewer={handleRemoveViewer} 
-                                        onAddViewer={handleAddViewer} 
-                                        onCheckoutResource={(resourceSet, units) => handleCheckoutResource(project._id, resourceSet, units)} 
-                                        onCheckinResource={(resourceSet, units) => handleCheckinResource(project._id, resourceSet, units)} 
+
+                                    <ProjectTest
+                                        project={project}
+                                        onRemoveViewer={handleRemoveViewer}
+                                        onAddViewer={handleAddViewer}
+                                        onCheckoutResource={(resourceSet, units) => handleCheckoutResource(project._id, resourceSet, units)}
+                                        onCheckinResource={(resourceSet, units) => handleCheckinResource(project._id, resourceSet, units)}
                                         joined={project.joined} // Pass the joined state
                                     />
                                     <Button onClick={() => handleJoinProject(project._id)}>Join Project</Button>
@@ -286,5 +310,6 @@ const Projects = () => {
         </>
     );
 };
+
 
 export default Projects;
