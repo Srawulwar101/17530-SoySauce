@@ -69,7 +69,11 @@ const Projects = () => {
             fetchProjects(); // Fetch projects again to update the joined status
         } catch (error) {
             console.error("Error creating project:", error); // Log the error
-            setMessage("Failed to create project.");
+            if (error.response && error.response.data && error.response.data.error === "ProjectID already exists") {
+                setMessage("ProjectID already exists.");
+            } else {
+                setMessage("Failed to create project.");
+            }
         }
     };
 
