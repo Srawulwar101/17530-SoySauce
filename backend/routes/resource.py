@@ -110,9 +110,13 @@ def create_resource():
 
 @resource_bp.route("/all", methods=["GET"])
 def get_all_resources():
-    resources = resource_model.get_all_resources()
-    logger.debug("Retrieved all resources: %s", resources)  # Log the retrieved resources
-    return json_util.dumps({"resources": resources}), 200, {'ContentType':'application/json'}
+    try:
+        resources = resource_model.get_all_resources()  # Fetch all resources
+        logger.debug("Retrieved all resources: %s", resources)  # Log the retrieved resources
+        return jsonify({"resources": resources}), 200  # Return as JSON
+    except Exception as e:
+        logger.exception("Error retrieving resources: %s", str(e))
+        return jsonify({"error": "Failed to retrieve resources"}), 500
 
 # Test endpoint, not meant to be used in practice
 @resource_bp.route("/test", methods=["GET"])

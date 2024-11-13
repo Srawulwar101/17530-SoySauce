@@ -65,7 +65,12 @@ export const createResource = (name, totalUnits) => {
 };
 
 export const getAllResources = () => {
-  return axios.get(`${API_URL}/resources/all`);
+    return axios.get(`${API_URL}/resources/all`)
+        .then(response => response.data)
+        .catch(error => {
+            console.error("Error fetching resources:", error);
+            throw error;
+        });
 };
 
 export const joinProject = (projectId, userId) => {

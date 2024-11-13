@@ -106,4 +106,7 @@ class HardwareResource:
         return self.collection.find_one({"_id": resource_id})
     
     def get_all_resources(self):
-        return list(self.collection.find())
+        resources = list(self.collection.find())
+        logger.debug("Fetched resources: %s", resources)
+        # Extract relevant fields from each resource
+        return [{"id": str(resource["_id"]), "name": resource["name"], "total_units": resource["total_units"], "available_units": resource["available_units"]} for resource in resources]

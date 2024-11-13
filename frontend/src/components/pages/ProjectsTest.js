@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getProjects, createProject, addViewer, removeViewer, checkoutResource, checkinResource, joinProject, leaveProject } from '../../services/api'; // Import necessary functions
+import { getProjects, createProject, addViewer, removeViewer, checkoutResource, checkinResource, joinProject, leaveProject, getAllResources } from '../../services/api'; // Import necessary functions
 import NavBar from "../elements/Navbar";
 import ProjectTest from './ProjectTest';
 import { Button, Form, Container } from 'react-bootstrap';
@@ -7,13 +7,14 @@ import { Button, Form, Container } from 'react-bootstrap';
 
 const Projects = () => {
     const [projects, setProjects] = useState([]);
+    const [totalResourcesHW1, setTotalResourcesHW1] = useState(0); // State for total resources of HW Set1
+    const [totalResourcesHW2, setTotalResourcesHW2] = useState(0); // State for total resources of HW Set2
     const [message, setMessage] = useState("");
     const [userId] = useState(localStorage.getItem("userId") || ""); // Retrieve userId from local storage
     const [projectName, setProjectName] = useState("");
     const [description, setDescription] = useState("");
     const [projectId, setProjectId] = useState("");
     const [joinProjectId, setJoinProjectId] = useState(""); // State for the join project ID
-
 
     const fetchProjects = async () => {
         try {
@@ -32,14 +33,22 @@ const Projects = () => {
         }
     };
 
+    const fetchTotalResources = async () => {
+        try {
+            const resources = await getAllResources(); // Fetch all resources
+            const totalHW1 = resources.resources.reduce((acc, resource) => acc + (resource.name === "HW Set1" ? resource.available_units : 0), 0); // Calculate total for HW Set1
+            const totalHW2 = resources.resources.reduce((acc, resource) => acc + (resource.name === "HW Set2" ? resource.available_units : 0), 0); // Calculate total for HW Set2
+            setTotalResourcesHW1(totalHW1); // Update total resources for HW Set1
+            setTotalResourcesHW2(totalHW2); // Update total resources for HW Set2
+        } catch (error) {
+            console.error("Error fetching total resources:", error);
+        }
+    };
 
     useEffect(() => {
-   
         fetchProjects();
+        fetchTotalResources(); // Fetch total resources when component mounts
     }, [userId]);
-   
-   
-
 
     const handleCreateProject = async (e) => {
         e.preventDefault();
@@ -57,15 +66,10 @@ const Projects = () => {
             setDescription("");
             setProjectId(""); // Ensure projectId is cleared as a string
 
-
             fetchProjects(); // Fetch projects again to update the joined status
         } catch (error) {
             console.error("Error creating project:", error); // Log the error
-            if (error.response && error.response.data && error.response.data.error === "ProjectID already exists") {
-                setMessage("ProjectID already exists.");
-            } else {
-                setMessage("Failed to create project.");
-            }
+            setMessage("Failed to create project.");
         }
     };
 
@@ -130,6 +134,12 @@ const Projects = () => {
             const unitCount = parseInt(units, 10);
             console.log("Unit count after parsing:", unitCount);
 
+            // Update total resources based on the resource set
+            if (resourceSet === "HW Set1") {
+                setTotalResourcesHW1(prevTotal => Math.max(0, prevTotal - unitCount)); // Decrease total resources for HW Set1
+            } else {
+                setTotalResourcesHW2(prevTotal => Math.max(0, prevTotal - unitCount)); // Decrease total resources for HW Set2
+            }
 
             // Update only the specific project's resource count and joined status
             setProjects(prevProjects =>
@@ -161,14 +171,22 @@ const Projects = () => {
         try {
             const response = await checkinResource(resourceId, units, projectIdString); // Pass the project ID as a string
             setMessage(response.data.message);
-   
+    
+            const unitCount = parseInt(units, 10);
+            // Update total resources based on the resource set
+            if (resourceSet === "HW Set1") {
+                setTotalResourcesHW1(prevTotal => prevTotal + unitCount); // Increase total resources for HW Set1
+            } else {
+                setTotalResourcesHW2(prevTotal => prevTotal + unitCount); // Increase total resources for HW Set2
+            }
+
             // Update the state of the specific project
-            setProjects(prevProjects => prevProjects.map(project =>
-                project._id === projectId ? {
-                    ...project,
-                    [resourceSet === "HW Set1" ? "hw1" : "hw2"]: project[resourceSet === "HW Set1" ? "hw1" : "hw2"] + parseInt(units),
+            setProjects(prevProjects => prevProjects.map(project => 
+                project._id === projectId ? { 
+                    ...project, 
+                    [resourceSet === "HW Set1" ? "hw1" : "hw2"]: project[resourceSet === "HW Set1" ? "hw1" : "hw2"] + unitCount,
                     // Ensure to update the total resources for display
-                    totalResources: (project[resourceSet === "HW Set1" ? "hw1" : "hw2"] + parseInt(units)) + ' / 100'
+                    totalResources: (project[resourceSet === "HW Set1" ? "hw1" : "hw2"] + unitCount) + ' / 100'
                 } : project
             ));
 
@@ -221,6 +239,8 @@ const Projects = () => {
             <Container>
                 <h1>Projects</h1>
                 {message && <p>{message}</p>}
+                <h2>Total Resources Remaining for HW Set1: {totalResourcesHW1}</h2> {/* Display total resources for HW Set1 */}
+                <h2>Total Resources Remaining for HW Set2: {totalResourcesHW2}</h2> {/* Display total resources for HW Set2 */}
                 <Form onSubmit={handleCreateProject}>
                     <h2>Create New Project</h2>
                     <Form.Group controlId="formProjectName">
@@ -255,7 +275,6 @@ const Projects = () => {
                     </Button>
                 </Form>
 
-
                 <Form onSubmit={handleJoinProjectById}>
                     <h2>Join Project by ID</h2>
                     <Form.Group controlId="formJoinProjectId">
@@ -272,31 +291,25 @@ const Projects = () => {
                     </Button>
                 </Form>
 
-
                 <div>
                     {projects.length === 0 ? (
                         <p>No projects found.</p>
                     ) : (
                         projects.map((project, index) => {
-
-
-                            const uniqueKey = project._id && project._id.$oid
-                                ? project._id.$oid
+                            const uniqueKey = project._id && project._id.$oid 
+                                ? project._id.$oid 
                                 : JSON.stringify(project._id) || `${project.project_name}-${index}`;
                             console.log("Rendering project with key:", uniqueKey);
 
 
                             return (
                                 <div key={uniqueKey}>
-                                   
-
-
-                                    <ProjectTest
-                                        project={project}
-                                        onRemoveViewer={handleRemoveViewer}
-                                        onAddViewer={handleAddViewer}
-                                        onCheckoutResource={(resourceSet, units) => handleCheckoutResource(project._id, resourceSet, units)}
-                                        onCheckinResource={(resourceSet, units) => handleCheckinResource(project._id, resourceSet, units)}
+                                    <ProjectTest 
+                                        project={project} 
+                                        onRemoveViewer={handleRemoveViewer} 
+                                        onAddViewer={handleAddViewer} 
+                                        onCheckoutResource={(resourceSet, units) => handleCheckoutResource(project._id, resourceSet, units)} 
+                                        onCheckinResource={(resourceSet, units) => handleCheckinResource(project._id, resourceSet, units)} 
                                         joined={project.joined} // Pass the joined state
                                     />
                                     <Button onClick={() => handleJoinProject(project._id)}>Join Project</Button>

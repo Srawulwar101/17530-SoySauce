@@ -12,7 +12,6 @@ class Project:
 
     def create_project(self, user_id, project_name, description, project_id):
 
-
         # Check if the project_id already exists
         existing_project = self.collection.find_one({"project_id": project_id})
         if existing_project:
@@ -53,6 +52,12 @@ class Project:
             logger.debug("This is the value of project_id: %s", project_id)
             project = self.collection.find_one({"_id": project_id})
             logger.debug("Project retrieved1: %s", project)
+            if not project:
+                # If not found by _id, try finding by project_id as a string
+                logger.debug("HEHRHHEHRHEHRHEHRHE")
+                project = self.collection.find_one({"project_id": str(project_id)})
+            
+            logger.debug("Project retrieved21: %s", project)
             if not project:
                 # If not found by _id, try finding by project_id as a string
                 logger.debug("HEHRHHEHRHEHRHEHRHE")
